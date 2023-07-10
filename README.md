@@ -28,16 +28,26 @@ ver 0.9
     km unlock -i sample.enc -o sample.txt -s custodian.keys   # use at least r of n keys in custodian.keys
     km --version
 ```
-### How to install and test
- Run the `./install.sh` script and confirm it is installed by running `km --help` at the command prompt.
+### How to install
 
+Clone & copy the executable, and then remove the repo source if not required.
+
+```
+git clone git@github.com:kposen/mk.git
+sudo cp mk/mk.sh $HOME/.local/bin/mk
+sudo chmod +x $HOME/.local/bin/mk
+rm -rf mk/
+```
+To confirm it is installed correctly simply execute `km --help` at the command prompt.
+
+### How to test
  To test start by creating a largish 10 Mb sample file:
  ```
  fallocate -l 10M sample.txt && echo "my sample file..." >> sample.txt && cat sample.txt
  ```
  This may take a second or two to read through the empty file and finally display your last line in plain text.
 
- Before we begin we will create a SHA256 of our plain text `sample.txt` file for later comparison, as follows:
+ Before we begin we will create a SHA256 of our test `sample.txt` file for later comparison, as follows:
  ```
  cat sample.txt | sha256sum > km.sha256 
  ```
@@ -64,7 +74,7 @@ These keys may be distributed one each to a key custodian.
 ---
 Now, in order to put *Humpty Dumpty* together again you require at least 3 of the key parts and the `sample.enc` encrypted file.
 
-Copy any three keys from any three key custodians and paste these one per line in a text file.  We will call this file `custodian.key.parts` 
+Copy any three keys from any three key custodians and paste these one per line in a text file.  We arbitrarily call this file `custodian.key.parts` 
 
 Now we are ready to proceed:
 ```
