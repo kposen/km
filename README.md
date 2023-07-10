@@ -33,6 +33,7 @@ ver 0.9
 Clone & copy the executable, and then remove the repo source if not required.
 
 ```
+sudo apt install ssss
 git clone git@github.com:kposen/mk.git
 sudo cp mk/mk.sh $HOME/.local/bin/mk
 sudo chmod +x $HOME/.local/bin/mk
