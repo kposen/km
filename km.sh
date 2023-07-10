@@ -8,6 +8,11 @@
 _version="0.9"
 _custodians=0;
 _required=0;
+_file=""
+_iv=""
+_salt=""
+_key=""
+_lock=""
 
 function displayHelp(){
  echo "Usage km [COMMAND] [OPTIONS]";
@@ -38,7 +43,7 @@ function displayHelp(){
 function displayVersion(){
  echo "km version $_version";
  echo "-------";
- echo "Source: https://github.com/kposen/km - Copyright (C) 2023, Kevin Posen
+ echo "Source: https://github.com/kposen/km - Copyright (C) 2023, Kevin Posen";
  echo "License MIT: https://opensource.org/licenses/MIT";
  echo "-------";
 }
@@ -54,7 +59,7 @@ function initialise(){
         _masterKey=$(openssl rand -hex 16)
         _salt=$(openssl rand -hex 16)
         _iv=$(openssl rand -hex 16)
-        echo "masterkey:$_masterKey" >> km.conf
+        echo "key:$_key" >> km.conf
         echo "salt:$_salt" >> km.conf
         echo "iv:$_iv" >> km.conf
         echo "custodians:$_custodians" >> km.conf
@@ -69,15 +74,18 @@ function initialise(){
 
 function lock(){
  # load the config and encrypt the file & generate the Shamir parts
+ echo "Locking contents of $_file..."
  _salt="$(cat km.conf |grep salt | awk -F: '{print $2}')"
  _iv="$(cat km.conf |grep iv | awk -F: '{print $2}')"
- _masterkey="$(cat km.conf |grep masterkey | awk -F: '{print $2}')"
- _custodians="$(cat km.conf |grep custodians | awk -F: '{print $2}')"
- _required="$(cat km.conf |grep required | awk -F: '{print $2}')"
+ _key="$(cat km.conf |grep masterkey | awk -F: '{print $2}')"
+
  # AES encrypt(masterkey ) file > file
- echo "openssl enc -aes-128-cbc -pbkdf2 -K $_key -S $_salt -iv $_iv -in sample.txt -out sample.txt.enc"
+ echo "openssl enc -aes-128-cbc -pbkdf2 -K $_key -S $_salt -iv $_iv -in $_file -out $_file.enc"
 
  # ssss-split -t 3 -n 5 -w $_masterKey
+ _custodians="$(cat km.conf |grep custodians | awk -F: '{print $2}')"
+ _required="$(cat km.conf |grep required | awk -F: '{print $2}')"
+ echo "echo $_key$_iv$_salt | ssss-split -t $_required -n $_custodians -w km"
 }
 
 function unlock(){
@@ -91,12 +99,10 @@ while [[ "$#" > 0 ]]; do
         status) 
             displayStatus; exit 0;;
         --initialise)
-            _custodians="$2";
-            _required="$3";
-            initialise;
+            _custodians="$2"
+            _required="$3"
+            initialise
             exit 0;;
-        lock|LOCK) 
-            lock; exit 0;;
         unlock|UNLOCK) 
             unlock; exit 0;;  
         --help) 
@@ -104,13 +110,20 @@ while [[ "$#" > 0 ]]; do
         --version) 
             displayVersion; exit 0;;
         -f|--file) 
-            _conf="$2";
+            _file="$2"
+            shift;shift
+            ;;
+        lock|LOCK) 
+            _lock="1"
             shift;;
-        *) echo "Unknown parameter passed: $1"; exit 1;;
-    esac; 
-    shift;
+        *) echo "Unknown parameter passed: $1"; echo "Try km --help for help"; exit 1;;
+    esac 
 done
 
-echo "Try km --help for help";
+if [ "$_lock" = "1" ]; then
+  lock
+fi
+
+
 
 ## End ##
