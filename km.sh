@@ -91,7 +91,19 @@ function unlock(){
     _custodians="$(cat km.conf |grep custodians | awk -F: '{print $2}')"
     _required="$(cat km.conf |grep required | awk -F: '{print $2}')"
 
-    echo "1. read in $_required lines from the $_custodianKeysFile - each line is a key eg \$km1..3"
+    # read in $_required lines from the $_custodianKeysFile - each line is a km_key"
+    declare -a km_keys
+    while IFS= read -r line; do 
+        if [ ${line:0:3} == "km-" ]; then 
+            km_keys+=("$line")
+        fi
+    done < $_custodianKeysFile
+    if [ $_required -ne ${#km_keys[@]} ]; then
+      echo "Incorrect number of Shamir key parts."
+      echo "Expecting $_required key parts and got ${#km_keys[@]} - aborting!."
+      exit 1
+    fi
+    
     echo "2. ssss-split -t 3 <<EOF; \$km1; \$km2; \$km3; EOF"
     echo "3. split out the key = \${split:0:15}, iv = \${split:16:31}, salt = \${split:32:48} "
     echo "4. decrypt the $_inFile with the \$_key, \$_iv, and \$_salt, and create the $_outFile"
