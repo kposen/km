@@ -1,8 +1,8 @@
 #!/bin/bash
-# Copyright (c) 2023, Kevin ??
+# Copyright (c) 2023, Kevin Posen
 # Contributors:
 #   - Bank-Builder : https://github.com/Bank-Builder
-#   - Kevin-???? :  https://github.com/kevin-???
+#   - Kevin Posen :  https://github.com/kposen/km
 # License MIT: https://opensource.org/licenses/MIT
 
 _version="0.9"
@@ -38,7 +38,7 @@ function displayHelp(){
 function displayVersion(){
  echo "km version $_version";
  echo "-------";
- echo "Source: https://github.com/kevin-???/km - Copyright (C) 2023, Kevin ????";
+ echo "Source: https://github.com/kposen/km - Copyright (C) 2023, Kevin Posen
  echo "License MIT: https://opensource.org/licenses/MIT";
  echo "-------";
 }

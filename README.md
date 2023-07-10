@@ -13,5 +13,5 @@
 
 
 ---
-Copyright &copy; 2023, Kevin ???<br>
+Copyright &copy; 2023, Kevin Posen<br>
 Licensed under [MIT](./LICENSE)
