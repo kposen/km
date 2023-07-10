@@ -11,7 +11,9 @@ ver 0.9
    to the key custodians, and then join it all back together again.
 
   [COMMAND]:
-    --initialise [custodians] [required] [--force]
+    --help                               display this help
+    --version                            display the version of km
+    --initialise [custodians] [required]
                                          initialise for a given number of custodians
                                          and parts required to reconstitute.
                                          Where a .conf already exists the optional --force
@@ -20,13 +22,13 @@ ver 0.9
 
     lock -i [file]                       created the encrypted file.enc and a custodian.keys file
 
-    unlock -i [file.enc] -o [file] -s [custodians.keys]  
-                                         decrypts the [file]using the key parts provided
+    unlock -i [encrypted_file] -o [file] -s [custodians.keys]
+                                         decrypts the [encrypted_file] using the key parts provided
 
   EXAMPLE(s):
     km --initialise 5 2                                       # create a km.conf file
-    km lock -i sample.txt -o sample.enc -s custodian.keys     # creates the encrypted file & custodian.keys 
-    km unlock -i sample.enc -o sample.txt  -s custodian.keys  # use at least r of n keys in custodian.keys
+    km lock -i sample.txt -o sample.enc -s custodian.keys     # creates the encrypted file & custodian.keys
+    km unlock -i sample.enc -o sample.txt -s custodian.keys   # use at least r of n keys in custodian.keys
     km --version
 ```
 

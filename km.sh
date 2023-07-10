@@ -35,7 +35,7 @@ function displayHelp(){
     echo "    lock -i [file]                       created the encrypted file.enc and a custodian.keys file";
     echo "";
     echo "    unlock -i [encrypted_file] -o [file] -s [custodians.keys]";
-    echo "                                         decryptes the [encrypyted_file] using the key parts provided";
+    echo "                                         decrypts the [encrypted_file] using the key parts provided";
     echo "";
     echo "  EXAMPLE(s):";
     echo "    km --initialise 5 2                                       # create a km.conf file";
@@ -103,7 +103,7 @@ function unlock(){
       echo "Expecting $_required key parts and got ${#km_keys[@]} - aborting!."
       exit 1
     fi
-    
+
     echo "2. ssss-split -t 3 <<EOF; \$km1; \$km2; \$km3; EOF"
     echo "3. split out the key = \${split:0:15}, iv = \${split:16:31}, salt = \${split:32:48} "
     echo "4. decrypt the $_inFile with the \$_key, \$_iv, and \$_salt, and create the $_outFile"
