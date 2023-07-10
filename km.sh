@@ -28,9 +28,6 @@ function displayHelp(){
     echo "    --initialise [custodians] [required]";
     echo "                                         initialise for a given number of custodians";
     echo "                                         and parts required to reconstitute.";
-    echo "                                         Where a .conf already exists the optional --force";
-    echo "                                         will regenerate the master-key instead of only just";
-    echo "                                         regenerating the custodian key parts.";
     echo "";
     echo "    lock -i [file]                       created the encrypted file.enc and a custodian.keys file";
     echo "";
