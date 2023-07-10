@@ -16,9 +16,6 @@ ver 0.9
     --initialise [custodians] [required]
                                          initialise for a given number of custodians
                                          and parts required to reconstitute.
-                                         Where a .conf already exists the optional --force
-                                         will regenerate the master-key instead of only just
-                                         regenerating the custodian key parts.
 
     lock -i [file]                       created the encrypted file.enc and a custodian.keys file
 
