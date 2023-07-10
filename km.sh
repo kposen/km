@@ -101,7 +101,7 @@ function unlock(){
 # Kevin's Magic Main
 while [[ "$#" > 0 ]]; do
     case $1 in
-        --initialise|--initilize)
+        --initialise|--initialize)
             _custodians=$2
             _required=$3
             initialise
