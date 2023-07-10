@@ -1,4 +1,7 @@
+# Ignore all key & testing material
 sample*
+*.keys
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

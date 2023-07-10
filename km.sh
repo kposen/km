@@ -8,7 +8,9 @@
 _version="0.9"
 _custodians=0;
 _required=0;
-_file=""
+_inFile=""
+_outFile=""
+_custodianKeysFile=""
 _iv=""
 _salt=""
 _key=""
@@ -28,14 +30,14 @@ function displayHelp(){
  echo "                                         will regenerate the master-key instead of only just";
  echo "                                         regenerating the custodian key parts.";
  echo "";
- echo "    lock -f [file]                       encrypted the [file] and displays 'custodian.1..5' key parts";
+ echo "    lock -i [file]                       created the encrypted file.enc and a custodian.keys file";
  echo "";
- echo "    unlock -f [file] -parts [[parts n/m]] decryptes the [file]using the key parts provided";
+ echo "    unlock -i [file.enc] -o [file] -s [custodians.keys] - decryptes the [file]using the key parts provided";
  echo "";
  echo "  EXAMPLE(s):";
- echo "    km --initialise 5 2                     # create a km.conf file with keys & salt";
- echo "    km lock -f payload.file                 # creates an encrypted payload.enc & cutodian key files";
- echo "    km unlock -f payload.file -parts [part1/5] [part2/5]   # use parts 2/5 to unlock payload.enc";         
+ echo "    km --initialise 5 2                                        # create a km.conf file with keys & salt";
+ echo "    km lock -i sample.txt -o sample.enc -s custodian.keys      # creates the encrypted file.enc & custodian.keys files";
+ echo "    km unlock -i sample.enc -o sample.txt  -s custodian.keys   # use at least r of n keys in custodian.keys";         
  echo "    km --version";
  echo "";
 }
@@ -56,12 +58,6 @@ function initialise(){
         touch km.conf
         echo "Kevin's Magic Configuration File" > km.conf
         echo "================================" >> km.conf
-        _masterKey=$(openssl rand -hex 16)
-        _salt=$(openssl rand -hex 16)
-        _iv=$(openssl rand -hex 16)
-        echo "key:$_key" >> km.conf
-        echo "salt:$_salt" >> km.conf
-        echo "iv:$_iv" >> km.conf
         echo "custodians:$_custodians" >> km.conf
         echo "required:$_required" >> km.conf
         echo "================================" >> km.conf
@@ -74,56 +70,73 @@ function initialise(){
 
 function lock(){
  # load the config and encrypt the file & generate the Shamir parts
- echo "Locking contents of $_file..."
- _salt="$(cat km.conf |grep salt | awk -F: '{print $2}')"
- _iv="$(cat km.conf |grep iv | awk -F: '{print $2}')"
- _key="$(cat km.conf |grep masterkey | awk -F: '{print $2}')"
+ _key=$(openssl rand -hex 16)
+ _salt=$(openssl rand -hex 16)
+ _iv=$(openssl rand -hex 16)
 
- # AES encrypt(masterkey ) file > file
- echo "openssl enc -aes-128-cbc -pbkdf2 -K $_key -S $_salt -iv $_iv -in $_file -out $_file.enc"
+ # AES(file,key,iv,salt) > file.enc
+ echo "openssl enc -aes-128-cbc -pbkdf2 -K $_key -S $_salt -iv $_iv -in $_inFile -out $_outFile"
 
- # ssss-split -t 3 -n 5 -w $_masterKey
+ # Perform Shamir secret sharing scheme on key+iv+salt ==> 48 bytes (128 bits x 3)
+ # We limited the key length to 128 bits to avoid over length input into ssss-split.
  _custodians="$(cat km.conf |grep custodians | awk -F: '{print $2}')"
  _required="$(cat km.conf |grep required | awk -F: '{print $2}')"
- echo "echo $_key$_iv$_salt | ssss-split -t $_required -n $_custodians -w km"
+ echo "echo $_key$_iv$_salt | ssss-split -t $_required -n $_custodians -w km > $_custodianKeysFile"
 }
 
 function unlock(){
- # ssss-combine -t 3 
- echo ""
+ # create a custodian key part file, on key per line
+ # read in the custodian keys and the encrypted file and produce the unencrypted output
+  _custodians="$(cat km.conf |grep custodians | awk -F: '{print $2}')"
+ _required="$(cat km.conf |grep required | awk -F: '{print $2}')"
+
+ echo "1. read in $_required lines from the $_custodianKeysFile - each line is a key eg \$km1..3"
+ echo "2. ssss-split -t 3 <<EOF; \$km1; \$km2; \$km3; EOF"
+ echo "3. split out the key = \${split:0:15}, iv = \${split:16:31}, salt = \${split:32:48} "
+ echo "4. decrypt the $_inFile with the \$_key, \$_iv, and \$_salt, and create the $_outFile"
+
 }
 
 # Kevin's Magic Main
 while [[ "$#" > 0 ]]; do
     case $1 in
-        status) 
-            displayStatus; exit 0;;
         --initialise)
             _custodians="$2"
             _required="$3"
             initialise
             exit 0;;
         unlock|UNLOCK) 
-            unlock; exit 0;;  
+            _operand="unlock";
+            shift;;  
         --help) 
             displayHelp; exit 0;;
         --version) 
             displayVersion; exit 0;;
-        -f|--file) 
-            _file="$2"
+        -i) 
+            _inFile="$2"
             shift;shift
             ;;
+        -o) 
+            _outFile="$2"
+            shift;shift
+            ;;
+        -s) 
+            _custodianKeysFile="$2"
+            shift;shift
+            ;;                        
         lock|LOCK) 
-            _lock="1"
+            _operand="lock"
             shift;;
         *) echo "Unknown parameter passed: $1"; echo "Try km --help for help"; exit 1;;
     esac 
 done
 
-if [ "$_lock" = "1" ]; then
+if [ "$_operand" == "lock" ]; then
   lock
+elif [ "$_operand" == "unlock" ]; then
+  unlock
+else
+  echo "Try km --help for help";exit 1;
 fi
-
-
 
 ## End ##
