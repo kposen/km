@@ -26,7 +26,7 @@ write_to_file(){
          touch "$_file"
      fi
 
-    echo "$_data" >> "$_file"
+    echo -e "$_data" >> "$_file"
  }
 
 function displayHelp(){
@@ -82,9 +82,10 @@ function initialise(){
 function lock(){
     # load the config and encrypt the file & generate the Shamir parts
     _key=$(openssl rand -hex 16)
-    _salt=$(openssl rand -hex 16)
     _iv=$(openssl rand -hex 16)
+    _salt=$(openssl rand -hex 16)
 
+    echo "key=$_key iv=$_iv salt=$_salt "
     # AES(file,key,iv,salt) > file.enc
     openssl enc -aes-128-cbc -pbkdf2 -K $_key -S $_salt -iv $_iv -in $_inFile -out $_outFile
 
@@ -106,6 +107,7 @@ function unlock(){
     while IFS= read -r line; do 
         if [ ${line:0:3} == "km-" ]; then 
             km_keys+=("$line")
+            if [ ${#km_keys[@]} -eq $_required ]; then break;fi
         fi
     done < $_custodianKeysFile
     if [ $_required -ne ${#km_keys[@]} ]; then
@@ -114,20 +116,25 @@ function unlock(){
       exit 1
     fi
 
-    echo "2. ssss-split -t 3 <<EOF; \$km1; \$km2; \$km3; EOF"
-    _split="ssss-split -t $_required <<EOF; "
-    for i in "${arr[@]}"
+    _split=""
+    for i in "${km_keys[@]}"
         do
-            echo "$i"
-            _split=$_split"$i;"
+            _split=$_split"$i\n"
         done
-    _split=$_split" EOF"
+    _split="ssss-combine -q -t $_required <<EOF\n"$_split"EOF\n"
+    rm -rf km.tmp~ 2>/dev/null
     write_to_file "km.tmp~" "$_split"
-    source km.tmp~
-    # rm -rf km.tmp~
+    echo ""
+    _secret=$(script -q -c 'source km.tmp~')
+    rm -rf km.tmp~
+    echo "$_secret"
 
-    echo "3. split out the key = \${split:0:15}, iv = \${split:16:31}, salt = \${split:32:48} "
-    echo "4. decrypt the $_inFile with the \$_key, \$_iv, and \$_salt, and create the $_outFile"
+    _key=${_secret:0:32} 
+    _iv=${_secret:32:32}
+    _salt=${_secret:64:32}
+
+    echo "key=$_key iv=$_iv salt=$_salt" 
+    openssl enc -d -aes-128-cbc -pbkdf2 -K $_key -S $_salt -iv $_iv -in $_inFile -out $_outFile
 
 }
 
