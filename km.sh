@@ -16,6 +16,19 @@ _salt=""
 _key=""
 _lock=""
 
+
+write_to_file(){
+     # initialize a local var
+     local _file="$1"
+     local _data="$2"
+
+     if [ ! -f "$_file" ] ; then
+         touch "$_file"
+     fi
+
+    echo "$_data" >> "$_file"
+ }
+
 function displayHelp(){
     echo "Usage km [COMMAND] [OPTIONS]";
     echo "ver $_version";
@@ -73,13 +86,13 @@ function lock(){
     _iv=$(openssl rand -hex 16)
 
     # AES(file,key,iv,salt) > file.enc
-    echo "openssl enc -aes-128-cbc -pbkdf2 -K $_key -S $_salt -iv $_iv -in $_inFile -out $_outFile"
+    openssl enc -aes-128-cbc -pbkdf2 -K $_key -S $_salt -iv $_iv -in $_inFile -out $_outFile
 
     # Perform Shamir secret sharing scheme on key+iv+salt ==> 48 bytes (128 bits x 3)
     # We limited the key length to 128 bits to avoid over length input into ssss-split.
     _custodians="$(cat km.conf |grep custodians | awk -F: '{print $2}')"
     _required="$(cat km.conf |grep required | awk -F: '{print $2}')"
-    echo "echo $_key$_iv$_salt | ssss-split -t $_required -n $_custodians -w km > $_custodianKeysFile"
+    eval $(echo "echo '$_key$_iv$_salt' | ssss-split -t $_required -n $_custodians -w km > $_custodianKeysFile")
 }
 
 function unlock(){
@@ -102,6 +115,17 @@ function unlock(){
     fi
 
     echo "2. ssss-split -t 3 <<EOF; \$km1; \$km2; \$km3; EOF"
+    _split="ssss-split -t $_required <<EOF; "
+    for i in "${arr[@]}"
+        do
+            echo "$i"
+            _split=$_split"$i;"
+        done
+    _split=$_split" EOF"
+    write_to_file "km.tmp~" "$_split"
+    source km.tmp~
+    # rm -rf km.tmp~
+
     echo "3. split out the key = \${split:0:15}, iv = \${split:16:31}, salt = \${split:32:48} "
     echo "4. decrypt the $_inFile with the \$_key, \$_iv, and \$_salt, and create the $_outFile"
 
