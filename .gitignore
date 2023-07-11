@@ -1,6 +1,8 @@
 # Ignore all key & testing material
 sample*
 *.keys
+typescript
+*.tmp*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
