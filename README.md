@@ -34,10 +34,11 @@ Clone & copy the executable, and then remove the repo source if not required.
 
 ```
 sudo apt install ssss
-git clone git@github.com:kposen/mk.git
-sudo cp mk/mk.sh $HOME/.local/bin/mk
-sudo chmod +x $HOME/.local/bin/mk
-rm -rf mk/
+git clone git@github.com:kposen/km.git
+cp km/km.sh $HOME/.local/bin/km
+chmod +x $HOME/.local/bin/km
+rm -rf km/
+# rm $HOME/.local/bin/km to uninstall
 ```
 To confirm it is installed correctly simply execute `km --help` at the command prompt.
 
