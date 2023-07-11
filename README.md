@@ -51,7 +51,7 @@ To confirm it is installed correctly simply execute `km --help` at the command p
 
  Before we begin we will create a SHA256 of our test `sample.txt` file for later comparison, as follows:
  ```
- cat sample.txt | sha256sum > km.sha256 
+ cat sample.txt | sha256sum > sample.sha256 
  ```
  
 
@@ -80,12 +80,12 @@ Copy any three keys from any three key custodians and paste these one per line i
 
 Now we are ready to proceed:
 ```
-km unlock -i sample.enc -o sample.plaintext -s custodian.key.parts
+km unlock -i sample.enc -o sample.out -s custodian.key.parts
 ```
 
-And you may confirm your file by `cat sample.plaintext` and seeing the last line being your plain text as before or you may compare the SHA256 created during testing above as follows:
+And you may confirm your file by `cat sample.out` and seeing the last line being your plain text as before or you may compare the SHA256 created during testing above as follows:
 ```
-cat sample.plaintext | sha256sum -c km.sha256
+cat sample.out | sha256sum -c sample.sha256
 ```
 And that is all there is to it ...
 
