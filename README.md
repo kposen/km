@@ -76,7 +76,7 @@ These keys may be distributed one each to a key custodian.
 ---
 Now, in order to put *Humpty Dumpty* together again you require at least 3 of the key parts and the `sample.enc` encrypted file.
 
-Copy any three keys from any three key custodians and paste these one per line in a text file.  We arbitrarily call this file `custodian.key.parts` 
+Copy any three keys from any three key custodians and paste these one per line in a text file.  We arbitrarily call this file `custodians.keys`. For purpose of testing `unlock` we just use the same one created during `lock`ing the `sample.txt` earlier.
 
 Now we are ready to proceed:
 ```
